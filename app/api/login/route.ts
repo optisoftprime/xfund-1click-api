@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BASE_URL = "https://xfund.stlassetmgt.com:10443/api/v1";
-// const BASE_URL = "http://localhost:3000/api/login";
 
 async function handler(
   req: NextRequest,
