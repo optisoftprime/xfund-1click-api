@@ -1,143 +1,97 @@
-// import { NextRequest, NextResponse } from "next/server";
-
-// const BASE_URL = "https://xfund.stlassetmgt.com:10443/api/v1";
-// // const BASE_URL = "http://localhost:3000/api/login";
-
-// async function handler(
-//   req: NextRequest,
-//   { params }: { params: { path: string[] } }
-// ) {
-//   try {
-//     const path = params.path.join("/");
-
-//     const url = `${BASE_URL}/${path}`;
-
-//     const body =
-//       req.method !== "GET" && req.method !== "HEAD"
-//         ? await req.text()
-//         : undefined;
-
-//     const response = await fetch(url, {
-//       method: req.method,
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: req.headers.get("authorization") || "",
-//       },
-//       body,
-//     });
-
-//     const data = await response.text();
-
-//     return new NextResponse(data, {
-//       status: response.status,
-//       headers: {
-//         "Content-Type":
-//           response.headers.get("content-type") || "application/json",
-//       },
-//     });
-//   } catch (error: any) {
-//     console.error("Proxy Error:", error);
-
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: "Proxy server error",
-//         error: error?.message || "Unknown error",
-//       },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// export async function GET(req: NextRequest, context: any) {
-//   return handler(req, context);
-// }
-
-// export async function POST(req: NextRequest, context: any) {
-//   return handler(req, context);
-// }
-
-// export async function PUT(req: NextRequest, context: any) {
-//   return handler(req, context);
-// }
-
-// export async function DELETE(req: NextRequest, context: any) {
-//   return handler(req, context);
-// }
-
-// export async function PATCH(req: NextRequest, context: any) {
-//   return handler(req, context);
-// }
-
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
+import https from "https";
 
-const BASE_URL = "https://xfund.stlassetmgt.com:10443/api/v1";
+const BASE_URL =
+  "https://xfund.stlassetmgt.com:10443/api/v1";
 
-async function handler(req: NextRequest, context: any) {
+export const runtime = "nodejs";
+
+async function handler(
+  req: NextRequest,
+  context: any
+) {
   try {
-    const path = context?.params?.path?.join("/") || "";
+    const path =
+      context?.params?.path?.join("/") || "";
 
     const url = `${BASE_URL}/${path}`;
 
     const body =
-      req.method !== "GET" && req.method !== "HEAD"
-        ? await req.text()
+      req.method !== "GET" &&
+      req.method !== "HEAD"
+        ? await req.json()
         : undefined;
 
-    const response = await fetch(url, {
+    const response = await axios({
       method: req.method,
+      url,
+      data: body,
+
       headers: {
         "Content-Type": "application/json",
-        Authorization: req.headers.get("authorization") || "",
       },
-      body,
+
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
     });
 
-    const contentType = response.headers.get("content-type");
-
-    if (contentType?.includes("application/json")) {
-      const data = await response.json();
-
-      return NextResponse.json(data, {
-        status: response.status,
-      });
-    }
-
-    const text = await response.text();
-
-    return new NextResponse(text, {
+    return NextResponse.json(response.data, {
       status: response.status,
     });
   } catch (error: any) {
-    console.error("Proxy Error:", error);
+    console.log(
+      "Proxy Error:",
+      error?.response?.data || error.message
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Proxy server error",
-        error: error?.message || "Unknown error",
+        error:
+          error?.response?.data ||
+          error.message,
       },
-      { status: 500 }
+      {
+        status:
+          error?.response?.status || 500,
+      }
     );
   }
 }
 
-export async function GET(req: NextRequest, context: any) {
+export async function GET(
+  req: NextRequest,
+  context: any
+) {
   return handler(req, context);
 }
 
-export async function POST(req: NextRequest, context: any) {
+export async function POST(
+  req: NextRequest,
+  context: any
+) {
   return handler(req, context);
 }
 
-export async function PUT(req: NextRequest, context: any) {
+export async function PUT(
+  req: NextRequest,
+  context: any
+) {
   return handler(req, context);
 }
 
-export async function PATCH(req: NextRequest, context: any) {
+export async function PATCH(
+  req: NextRequest,
+  context: any
+) {
   return handler(req, context);
 }
 
-export async function DELETE(req: NextRequest, context: any) {
+export async function DELETE(
+  req: NextRequest,
+  context: any
+) {
   return handler(req, context);
 }
