@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import https from "https";
 
+export const runtime = "nodejs";
+
 const BASE_URL =
   "https://xfund.stlassetmgt.com:10443/api/v1";
-
-export const runtime = "nodejs";
 
 async function handler(
   req: NextRequest,
@@ -45,7 +45,6 @@ async function handler(
       "Proxy Error:",
       error?.response?.data || error.message
     );
-    console.log("...Error Details:", error);
 
     return NextResponse.json(
       {
@@ -70,27 +69,6 @@ export async function GET(
 }
 
 export async function POST(
-  req: NextRequest,
-  context: any
-) {
-  return handler(req, context);
-}
-
-export async function PUT(
-  req: NextRequest,
-  context: any
-) {
-  return handler(req, context);
-}
-
-export async function PATCH(
-  req: NextRequest,
-  context: any
-) {
-  return handler(req, context);
-}
-
-export async function DELETE(
   req: NextRequest,
   context: any
 ) {
