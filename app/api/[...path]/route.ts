@@ -45,6 +45,7 @@ async function handler(
       "Proxy Error:",
       error?.response?.data || error.message
     );
+    console.log("...Error Details:", error);
 
     return NextResponse.json(
       {
