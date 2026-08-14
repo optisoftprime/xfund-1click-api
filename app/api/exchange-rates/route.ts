@@ -1,5 +1,6 @@
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
+  "http://localhost:3001" ,
   "https://1clickweb-preview.vercel.app",
   "https://app.stlassetmgt.com"
 ];
@@ -38,13 +39,25 @@ export async function GET(request: Request) {
       "Yala API Error: YALA_API_KEY and YALA_PAIRS_URL must both be set"
     );
 
+    // return Response.json(
+    //   {
+    //     success: false,
+    //     error: "Server misconfiguration",
+    //   },
+    //   { status: 500 }
+    // );
+
+
     return Response.json(
-      {
-        success: false,
-        error: "Server misconfiguration",
-      },
-      { status: 500 }
-    );
+    {
+      success: false,
+      error: "Server misconfiguration",
+    },
+    {
+      status: 500,
+      headers: corsHeaders(request),
+    }
+   );
   }
 
   try {
@@ -57,6 +70,18 @@ export async function GET(request: Request) {
       cache: "no-store",
     });
 
+    // if (!response.ok) {
+    //   const error = await response.text();
+
+    //   return Response.json(
+    //     {
+    //       success: false,
+    //       error,
+    //     },
+    //     { status: response.status, headers: corsHeaders(request) }
+    //   );
+    // }
+
     if (!response.ok) {
       const error = await response.text();
 
@@ -65,7 +90,10 @@ export async function GET(request: Request) {
           success: false,
           error,
         },
-        { status: response.status }
+        {
+          status: response.status,
+          headers: corsHeaders(request),
+        }
       );
     }
 
@@ -81,15 +109,35 @@ export async function GET(request: Request) {
         headers: corsHeaders(request),
       }
     );
-  } catch (error: any) {
-    console.error("Yala API Error:", error);
+  } catch (error: unknown) {
+  console.error("Yala API Error:", error);
 
-    return Response.json(
-      {
-        success: false,
-        error: error.message || "Internal Server Error",
-      },
-      { status: 500 }
-    );
-  }
+  const message =
+    error instanceof Error
+      ? error.message
+      : "Internal Server Error";
+
+  return Response.json(
+    {
+      success: false,
+      error: message,
+    },
+    {
+      status: 500,
+      headers: corsHeaders(request),
+    }
+  );
+}
+  
+  // catch (error: any) {
+  //   console.error("Yala API Error:", error);
+
+  //   return Response.json(
+  //     {
+  //       success: false,
+  //       error: error.message || "Internal Server Error",
+  //     },
+  //     { status: 500 }
+  //   );
+  // }
 }
