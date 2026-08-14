@@ -1,44 +1,60 @@
-// export async function GET() {
-//   try {
-//     const response = await fetch(
-//       "https://gateway.useyala.com/v1/payout-api/payouts/pairs",
-//            {
-//         headers: {
-//           "x-api-key": "BAaJxIxIb62LfQDVluWtu7YcAhkqooVV5bW1ekAg",
-//       },
-//       cache: "no-store",
-//       }
-//     );
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://xfund-1click-api.vercel.app",
+];
 
-//     const data = await response.json();
+function corsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get("Origin");
 
-//     return Response.json({
-//       success: true,
-//       data,
-//     });
-//   } catch (error: any) {
-//     return Response.json({
-//       success: false,
-//       error: error.message,
-//     });
-//   }
-// }
+  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+    return {};
+  }
+
+  return {
+    "Access-Control-Allow-Origin": origin,
+    Vary: "Origin",
+  };
+}
+
+export async function OPTIONS(request: Request) {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      ...corsHeaders(request),
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "*",
+    },
+  });
+}
 
 
+export async function GET(request: Request) {
+  const apiKey = process.env.YALA_API_KEY;
+  const pairsUrl = process.env.YALA_PAIRS_URL;
 
-export async function GET() {
-  try {
-    const response = await fetch(
-      "https://gateway.useyala.com/v1/payout-api/payouts/pairs",
-      {
-        method: "GET",
-        headers: {
-          "x-api-key": "BAaJxIxIb62LfQDVluWtu7YcAhkqooVV5bW1ekAg",
-          Accept: "application/json",
-        },
-        cache: "no-store",
-      }
+  if (!apiKey || !pairsUrl) {
+    console.error(
+      "Yala API Error: YALA_API_KEY and YALA_PAIRS_URL must both be set"
     );
+
+    return Response.json(
+      {
+        success: false,
+        error: "Server misconfiguration",
+      },
+      { status: 500 }
+    );
+  }
+
+  try {
+    const response = await fetch(pairsUrl, {
+      method: "GET",
+      headers: {
+        "x-api-key": apiKey,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -59,7 +75,10 @@ export async function GET() {
         success: true,
         data,
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: corsHeaders(request),
+      }
     );
   } catch (error: any) {
     console.error("Yala API Error:", error);
