@@ -1,6 +1,7 @@
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
-  "https://xfund-1click-api.vercel.app",
+  "https://1clickweb-preview.vercel.app",
+  "https://app.stlassetmgt.com"
 ];
 
 function corsHeaders(request: Request): Record<string, string> {
